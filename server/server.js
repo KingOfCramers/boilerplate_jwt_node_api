@@ -15,7 +15,7 @@ app.use(bodyParser.json()); // Middlewear. Sets our headers to JSON.
 
 // ROUTES
 app.post("/cases", (req,res) => {
-    // Upon a POST method to /todos Url, get the body of the request, and get the text value. Use that to create a new ccase based on our mongo model.
+    // Upon a POST method to /cases Url, get the body of the request, and get the text value. Use that to create a new ccase based on our mongo model.
     const ccase = new CourtCase({
         resource_uri: req.body.resource_uri,
         id: req.body.id,
@@ -61,6 +61,22 @@ app.get("/cases/:case", (req,res) => {
     })  // Returns all Cases.
 });
 
+
+app.delete("/cases/:case", (req,res) => {
+    let id = req.params.case;
+    if(!ObjectID.isValid(id)){
+        return res.status(404).send();
+    }
+    CourtCase.findByIdAndRemove(id).then((the_case) => {
+        if(!the_case){
+            return res.status(404).send();
+        }
+        res.send({the_case});
+    }).catch((e) => {
+        res.status(400).send();
+    });
+});
+
 app.listen(port, () => {
     console.log(`**** ${dev} server started on port ${port}.`);
 });
@@ -77,9 +93,6 @@ app.post("/users", (req,res) => {
     });
 });
 
-
-/// SOMEHOW CONNECT OUR TOKEN TO OUR SET INTERVAL FUNCTION
-const username = "Harrison";
 /*
 setInterval(() => {
     databaseCheck(username);
