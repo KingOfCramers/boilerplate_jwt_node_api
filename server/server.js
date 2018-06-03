@@ -93,10 +93,7 @@ app.post("/users", (req,res) => {
     });
 });
 
-/*
-setInterval(() => {
-    databaseCheck(username);
-}, 5000)*/
+// Call database check here...
 
 // Export app for testing purposes.
 module.exports = { app };
