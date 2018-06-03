@@ -7,7 +7,8 @@ const CourtCase = mongoose.model('court-doc', {
         type: String,
         minLength: 1,
         trim: true,
-        required: true
+        required: true,
+        unique: true
     },
     id: {
         type: Number,
@@ -18,7 +19,8 @@ const CourtCase = mongoose.model('court-doc', {
     absolute_url: {
         type: String,
         default: null,
-        required: true
+        required: true,
+        unique: true
     },
     date_created: {
         type: String,
@@ -33,7 +35,8 @@ const CourtCase = mongoose.model('court-doc', {
     case_name: {
         type: String,
         defualt: null,
-        required: true
+        required: true,
+        unique: true
     }
 }); // Mongooose automatically converts this to lowercase and pluralizes it as our collection.
 
