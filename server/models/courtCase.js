@@ -12,7 +12,6 @@ const CourtCase = mongoose.model('court-doc', {
     id: {
         type: Number,
         default: false,
-        unique: true,
         required: true
     },
     absolute_url: {
