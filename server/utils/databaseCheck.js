@@ -12,28 +12,20 @@ const databaseCheck = (username) => {
             return console.log("There was an error", err);
         }
         docs.forEach((doc) => {
-            // console.log(doc.id)
             axios.get(`https://www.courtlistener.com/api/rest/v3/dockets/${doc.id}/?format=json`)
             .then((res) => {
-                if(res.data.date_modified !== doc.date_modified){
-                    //console.log(res.data)
-                    console.log(new Date(), `: ${doc.case_name}`);
+                if(res.data.date_modified !== doc.date_modified){ // If the date modified has changed since last check...
                     mailer(res.data.absolute_url,res.data.case_name);
                     CourtCase.findOneAndUpdate({"id": res.data.id}, {date_modified: res.data.date_modified }, (err,newDoc) => { // Update Mlab.
                         if(err){
                             return console.log(err);
                         }
                     });
-
                 } else {
                     console.log("No changes");
                 }
             })
-            .then(() => {
-               // mongoose.disconnect();
-            })
             .catch(e => {
-                // mongoose.disconnect();
                 return console.log(e);
             });
         });

@@ -9,7 +9,7 @@ mongoose.Promise = global.Promise; // Tell mongoose to use promises.
 if(dev === "development"){
     mongoose.connect("mongodb://localhost:27017/RecapApp");
 } else {
-mongoose.connect(`mongodb://${keys.mongo_user}:${keys.mongo_password}@ds155191.mlab.com:55191/recap-node-app`);
+    mongoose.connect(`mongodb://${keys.mongo_user}:${keys.mongo_password}@ds155191.mlab.com:55191/recap-node-app`);
 }
 
 module.exports = {

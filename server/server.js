@@ -77,9 +77,6 @@ app.delete("/cases/:case", (req,res) => {
     });
 });
 
-app.listen(port, () => {
-    console.log(`**** ${dev} server started on port ${port}.`);
-});
 
 app.post("/users", (req,res) => {
     var body = _.pick(req.body, ['email', 'password']); // Creates an object using the properties passed into the array.
@@ -93,7 +90,13 @@ app.post("/users", (req,res) => {
     });
 });
 
+app.listen(port, () => {
+    console.log(`**** ${dev} server started on port ${port}.`);
+});
+
 // Call database check here...
+// User token should later have "timer value" that is passed into the database check function.
+databaseCheck("harrison's token goes here");
 
 // Export app for testing purposes.
 module.exports = { app };
