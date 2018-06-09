@@ -228,3 +228,21 @@ describe("POST /users/login", () => { // This will return a token to the user.
             });
     });
 });
+
+describe("DELETE /users/logout", () => {
+    it("Should logout a user by deleting the jwt token", (done) => {
+        supertest(app)
+            .delete("/users/logout")
+            .set("x-auth", users[0].tokens[0].token)
+            .expect(200)
+            .end((err,res) => {
+                if(err){
+                    done(err);
+                }
+                User.findById(users[0]._id).then((user) => {
+                    expect(user.tokens.length).toBe(0);
+                    done();
+                }).catch(e => done(e));
+            });
+    });
+});

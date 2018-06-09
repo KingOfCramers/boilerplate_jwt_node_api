@@ -79,13 +79,9 @@ app.delete("/cases/:case", (req,res) => {
     });
 });
 
-
 app.post("/users", (req,res) => {
     var body = _.pick(req.body, ['email', 'password']); // Creates an object using the properties passed into the array.
-
     var user = new User(body);
-
-
     user.save().then(() => {
         return user.generateAuthToken();
     }).then((token) => {
@@ -109,14 +105,18 @@ app.post("/users/login", (req,res) => { // Will add logged in token to database 
 app.get("/users/me", authenticate, (req,res) => { // Find associated user w/ token
     res.send(req.user);
 });
+app.delete("/users/logout", authenticate, (req, res) => {
+  // Our req object comes in from our authenticate function...
+  req.user.removeToken(req.token).then(() => {
+      res.status(200).send();
+    }, () => {
+      res.staus(400).send();
+    }
+  );
+});
 
 app.listen(port, () => {
     console.log(`**** ${dev} server started on port ${port}.`);
 });
 
-// Call database check here...
-// User token should later have "timer value" that is passed into the database check function.
- // databaseCheck("harrison's token goes here");
-
-// Export app for testing purposes.
 module.exports = { app };
