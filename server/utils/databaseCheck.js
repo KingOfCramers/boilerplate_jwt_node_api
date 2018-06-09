@@ -5,7 +5,7 @@ const { CourtCase } = require("../models/courtCase");
 const axios = require("axios");
 const { mailer } = require("./mailer");
 
-const databaseCheck = (username) => {
+/*const databaseCheck = (username) => {
     console.log(`Checking data for ${username}`);
     CourtCase.find({}, (err,docs) => {
         if(err){
@@ -30,8 +30,27 @@ const databaseCheck = (username) => {
             });
         });
     });
-}
+}*/
 
+const requestList = (items) => Promise.all(
+  items.map(key => (
+    axios.get(`https://www.courtlistener.com/api/rest/v3/dockets/${key.id}/?format=json`)
+      .catch(err => console.error(err))
+  )
+));
+
+CourtCase.find({}, (err,docs) => {
+    requestList(docs)
+        .then((results) => {
+
+
+            /*results.forEach(the_case => {
+                console.log(the_case.data.date_modified)
+            });*/
+        })
+        .catch(err => console.log(err));
+});
+/*
 module.exports = {
     databaseCheck
-}
+}*/

@@ -4,49 +4,19 @@ const { ObjectID } = require("mongodb");
 const { app } = require("../server.js");
 const { CourtCase } = require("../models/courtCase");
 const { User } = require("../models/user");
+const jwt = require("jsonwebtoken");
 
-// Dummy data of todos.
-const newCases = [{
-    _id: new ObjectID(),
-    id: 91573,
-    absolute_url: "/docket/91573/kelly-v-morse/",
-    date_created: "2014-10-30T06:30:40.548624Z",
-    date_modified: "2014-10-30T06:30:40.548624Z",
-    resource_uri: "https://www.courtlistener.com/api/rest/v3/dockets/91573/?format=json",
-    case_name: "Kelly v. Morse"},{
-    _id: new ObjectID(),
-    id: 982793,
-    absolute_url: "/docket/982793/second-case/",
-    date_created: "2014-10-30T06:30:40.548624Z",
-    date_modified: "2014-10-30T06:30:40.548624Z",
-    resource_uri: "https://www.courtlistener.com/api/rest/v3/dockets/982793/?format=json",
-    case_name: "Second Case"}];
-
-// Dummy data of new users.
-const newUsers = [{
-    email: "oldemail@gmail.com",
-    password: "testpassword"
-    },{
-    email: "newtestemail@gmail.com",
-    password: "newtestpassword"}];
+const { cases, users, populate, populateUsers } = require("./seed/seed");
 
 // Reset database for tests
-beforeEach((done) => {
-    CourtCase.remove({}).then(() => {  // Empties cases database.
-        return CourtCase.insertMany(newCases[0]) // Inserts single dummy doc.
-    }).then(() => {
-        User.remove({}).then(() => { // Empties Users database.
-            return User.insertMany(newUsers[0]) // Inserts single user doc.
-        }).then(() => done());
-    });
-});
+beforeEach(populate);
+beforeEach(populateUsers);
 
 describe("POST /cases", () => {
     it("Should POST a new courtCase", (done) => {
-
         supertest(app)
             .post("/cases")
-            .send(newCases[1])
+            .send(cases[1])
             .expect(200)
             .expect((res) => {
                 expect(res.body.id).toBeA('number');
@@ -80,7 +50,7 @@ describe("POST /cases", () => {
     it("Should not POST a duplicate courtCase", (done) => {
         supertest(app)
             .post("/cases")
-            .send(newCases[0])
+            .send(cases[0])
             .expect(400)
             .end((err,res) => {
                 if(err){
@@ -118,15 +88,15 @@ describe("GET /cases", () => {
 
     it("Should GET a single case", (done) => {
         supertest(app)
-            .get(`/cases/${newCases[0]._id.toHexString()}`)
+            .get(`/cases/${cases[0]._id.toHexString()}`)
             .expect(200)
             .expect((res) => {
-                expect(res.body.the_case.id).toBe(newCases[0].id);
-                expect(res.body.the_case.absolute_url).toBe(newCases[0].absolute_url);
-                expect(res.body.the_case.date_created).toBe(newCases[0].date_created);
-                expect(res.body.the_case.date_modified).toBe(newCases[0].date_modified);
-                expect(res.body.the_case.resource_uri).toBe(newCases[0].resource_uri);
-                expect(res.body.the_case.case_name).toBe(newCases[0].case_name);
+                expect(res.body.the_case.id).toBe(cases[0].id);
+                expect(res.body.the_case.absolute_url).toBe(cases[0].absolute_url);
+                expect(res.body.the_case.date_created).toBe(cases[0].date_created);
+                expect(res.body.the_case.date_modified).toBe(cases[0].date_modified);
+                expect(res.body.the_case.resource_uri).toBe(cases[0].resource_uri);
+                expect(res.body.the_case.case_name).toBe(cases[0].case_name);
             })
             .end(done);
     });
@@ -135,15 +105,15 @@ describe("GET /cases", () => {
 describe("DELETE /cases", () => {
     it("Should delete a single case", (done) => {
         supertest(app)
-            .delete(`/cases/${newCases[0]._id.toHexString()}`)
+            .delete(`/cases/${cases[0]._id.toHexString()}`)
             .expect(200)
             .expect((res) => {
-                expect(res.body.the_case.id).toBe(newCases[0].id);
-                expect(res.body.the_case.absolute_url).toBe(newCases[0].absolute_url);
-                expect(res.body.the_case.date_created).toBe(newCases[0].date_created);
-                expect(res.body.the_case.date_modified).toBe(newCases[0].date_modified);
-                expect(res.body.the_case.resource_uri).toBe(newCases[0].resource_uri);
-                expect(res.body.the_case.case_name).toBe(newCases[0].case_name);
+                expect(res.body.the_case.id).toBe(cases[0].id);
+                expect(res.body.the_case.absolute_url).toBe(cases[0].absolute_url);
+                expect(res.body.the_case.date_created).toBe(cases[0].date_created);
+                expect(res.body.the_case.date_modified).toBe(cases[0].date_modified);
+                expect(res.body.the_case.resource_uri).toBe(cases[0].resource_uri);
+                expect(res.body.the_case.case_name).toBe(cases[0].case_name);
             })
             .end(done);
     });
@@ -157,23 +127,104 @@ describe("DELETE /cases", () => {
     });
 });
 
-describe("POST /user", () => {
+describe("POST /users", () => {
     it("Should post a new user", (done) => {
+        var email = "uniqueemail@example.com"
+        var password = "9webipasd"
         supertest(app)
             .post("/users") // Post request to the /todos URL
-            .send(newUsers[1])
+            .send({
+                email,
+                password
+            })
             .expect(200)
             .expect((res) => {
-                expect(res.body.email).toBe(newUsers[1].email);
-                expect(res.body.password).toBe(newUsers[1].password);
+                expect(res.headers).toIncludeKey('x-auth')
+                expect(res.body._id).toExist();
+                expect(res.body.email).toBe(email);
             })
-            .end(done)
+            .end((err) => {
+                if(err){
+                    return done(err);
+                }
+                User.findOne({email}).then((user) => {
+                    expect(user).toExist();
+                    expect(user.password).toNotBe(password);
+                    done();
+                }).catch((e) => done(e));
+            });
     });
-    it("Should not post a duplicate user", (done) => {
+    it("Should not post a duplicate email", (done) => {
         supertest(app)
             .post("/users")
-            .send(newUsers[0]) // Try to post old data
+            .send({
+                email: users[0].email,
+                password: "sidhf89we"
+            }) // Try to post old email
             .expect(400)
             .end(done)
+    });
+    it("Should return validation errors", (done) => {
+        var email = "notvalid";
+        var password = "";
+        supertest(app)
+            .post("/users")
+            .send({
+                email: email,
+                password: password
+            })
+            .expect(400) // Doesn't send anything back becuase our User model breaks it. Catch block of our "/users" route.
+            .end(done);
+    });
+});
+
+describe("POST /users/me", () => {
+    it("Should return current user if authenticated", (done) => {
+        supertest(app)
+            .get("/users/me")
+            .set("x-auth", users[0].tokens[0].token) // Pass in token.
+            .expect(200)
+            .expect((res) => {
+                expect(res.body._id).toBe(users[0]._id.toHexString());
+                expect(res.body.email).toBe(users[0].email);
+            })
+            .end(done);
+    });
+    it("Should return 401 error if not authenticated", (done) => {
+        supertest(app)
+            .get("/users/me") // No token! Our authenticate route will fail
+            .expect(401)
+            .expect((res) => {
+                expect(res.body).toEqual({});
+            })
+            .end(done);
+
+    });
+});
+
+describe("POST /users/login", () => { // This will return a token to the user.
+    it("Should login a user with the valid email and password", (done) => {
+        supertest(app)
+            .post("/users/login")
+            .send({
+                email: users[1].email, // Pass in login credentials of someone w/out token
+                password: users[1].password
+            })
+            .expect(200)
+            .expect((res) => {
+                expect(res.headers["x-auth"]).toExist();
+            })
+            .end((err,res) => {
+                if(err){
+                    return done(err);
+                }
+                User.findById(users[1]._id).then((user) => {
+                    expect(user.tokens[0]).toInclude({
+                        access: "auth",
+                        token: res.headers["x-auth"]
+                    });
+                    done();
+                }).catch((e) => done(e));
+            });
     });
 });

@@ -9,6 +9,8 @@ const { User } = require("./models/user");
 const { ObjectID } = require("mongodb");
 const { databaseCheck } = require("./utils/databaseCheck");
 
+const { authenticate } = require("./middleware/authenticate");
+
 const app = express();
 
 app.use(bodyParser.json()); // Middlewear. Sets our headers to JSON.
@@ -81,13 +83,31 @@ app.delete("/cases/:case", (req,res) => {
 app.post("/users", (req,res) => {
     var body = _.pick(req.body, ['email', 'password']); // Creates an object using the properties passed into the array.
 
-    const newUser = new User(body)
+    var user = new User(body);
 
-    newUser.save().then((user) => {
-        res.send(user);
-    }, (e) => {
+
+    user.save().then(() => {
+        return user.generateAuthToken();
+    }).then((token) => {
+        res.header("x-auth", token).send(user);
+    }).catch((e) => {
         res.status(400).send(e);
     });
+});
+
+app.post("/users/login", (req,res) => { // Will add logged in token to database for correct credentials.
+    var { email, password } = _.pick(req.body, ['email', 'password']); // get data, find user
+    User.findByCredentials(email,password).then((user) => {
+        user.generateAuthToken().then((token) => {
+            res.header('x-auth', token).send(user);
+        });
+    }).catch((e) => {
+        res.status(400).send();
+    })
+});
+
+app.get("/users/me", authenticate, (req,res) => { // Find associated user w/ token
+    res.send(req.user);
 });
 
 app.listen(port, () => {
@@ -96,7 +116,7 @@ app.listen(port, () => {
 
 // Call database check here...
 // User token should later have "timer value" that is passed into the database check function.
-databaseCheck("harrison's token goes here");
+ // databaseCheck("harrison's token goes here");
 
 // Export app for testing purposes.
 module.exports = { app };
