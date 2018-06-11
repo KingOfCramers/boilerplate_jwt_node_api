@@ -24,19 +24,23 @@ const users = [{
 // Dummy data of todos.
 const cases = [{
     _id: new ObjectID(),
+    _creator: userOneId,
     id: 91573,
     absolute_url: "/docket/91573/kelly-v-morse/",
     date_created: "2014-10-30T06:30:40.548624Z",
     date_modified: "2014-10-30T06:30:40.548624Z",
     resource_uri: "https://www.courtlistener.com/api/rest/v3/dockets/91573/?format=json",
-    case_name: "Kelly v. Morse"},{
+    case_name: "Kelly v. Morse"
+    },{
     _id: new ObjectID(),
+    _creator: userTwoId,
     id: 982793,
     absolute_url: "/docket/982793/second-case/",
     date_created: "2014-10-30T06:30:40.548624Z",
     date_modified: "2014-10-30T06:30:40.548624Z",
     resource_uri: "https://www.courtlistener.com/api/rest/v3/dockets/982793/?format=json",
-    case_name: "Second Case"}];
+    case_name: "Second Case"
+}];
 
 const populate = (done) => {
     CourtCase.remove({}).then(() => {  // Empties database.

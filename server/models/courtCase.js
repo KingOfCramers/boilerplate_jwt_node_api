@@ -3,6 +3,10 @@ const mongoose = require("mongoose");
 // Define the properties of your documents in mongodDB.
 // Mongoose "validators" check to ensure the properties conform to the model.
 const CourtCase = mongoose.model('court-doc', {
+    _creator: {
+        required: true,
+        type: mongoose.Schema.Types.ObjectId
+    },
     resource_uri: {
         type: String,
         minLength: 1,

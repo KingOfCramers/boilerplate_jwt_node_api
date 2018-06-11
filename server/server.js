@@ -16,9 +16,10 @@ const app = express();
 app.use(bodyParser.json()); // Middlewear. Sets our headers to JSON.
 
 // ROUTES
-app.post("/cases", (req,res) => {
+app.post("/cases", authenticate, (req,res) => {
     // Upon a POST method to /cases Url, get the body of the request, and get the text value. Use that to create a new ccase based on our mongo model.
     const ccase = new CourtCase({
+        _creator: req.user._id,
         resource_uri: req.body.resource_uri,
         id: req.body.id,
         absolute_url: req.body.absolute_url,
@@ -35,8 +36,8 @@ app.post("/cases", (req,res) => {
     });
 });
 
-app.get("/cases", (req,res) => {
-    CourtCase.find().then((cases) => {
+app.get("/cases", authenticate, (req,res) => {
+    CourtCase.find({ _creator: req.user._id }).then((cases) => {
         res.send({ // By using an object, we can add other information...
             cases
         });
@@ -45,7 +46,7 @@ app.get("/cases", (req,res) => {
     })  // Returns all Cases.
 });
 
-app.get("/cases/:case", (req,res) => {
+app.get("/cases/:case", authenticate, (req,res) => {
     let id = req.params.case;
     if(!ObjectID.isValid(id)){
         return res.status(404).send(); // Pass nothing back
@@ -64,7 +65,7 @@ app.get("/cases/:case", (req,res) => {
 });
 
 
-app.delete("/cases/:case", (req,res) => {
+app.delete("/cases/:case", authenticate, (req,res) => {
     let id = req.params.case;
     if(!ObjectID.isValid(id)){
         return res.status(404).send();

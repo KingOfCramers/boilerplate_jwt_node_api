@@ -16,6 +16,7 @@ describe("POST /cases", () => {
     it("Should POST a new courtCase", (done) => {
         supertest(app)
             .post("/cases")
+            .set("x-auth", users[0].tokens[0].token)
             .send(cases[1])
             .expect(200)
             .expect((res) => {
@@ -31,6 +32,7 @@ describe("POST /cases", () => {
     it("Should not POST courtCase with invalid body data", (done) => {
         supertest(app)
             .post("/cases")
+            .set("x-auth", users[0].tokens[0].token)
             .send({})
             .expect(400)
             .end((err,res) => {
@@ -50,6 +52,7 @@ describe("POST /cases", () => {
     it("Should not POST a duplicate courtCase", (done) => {
         supertest(app)
             .post("/cases")
+            .set("x-auth", users[0].tokens[0].token)
             .send(cases[0])
             .expect(400)
             .end((err,res) => {
@@ -71,6 +74,7 @@ describe("GET /cases", () => {
     it("Should GET all cases", (done) => {
         supertest(app)
             .get("/cases")
+            .set("x-auth", users[0].tokens[0].token)
             .expect(200)
             .expect((res) => {
                 expect(res.body.cases.length).toBe(1);
@@ -82,6 +86,7 @@ describe("GET /cases", () => {
         const fakeID = new ObjectID();
         supertest(app)
             .get(`/cases/${fakeID.toHexString()}`)
+            .set("x-auth", users[0].tokens[0].token)
             .expect(404)
             .end(done)
     });
@@ -89,6 +94,7 @@ describe("GET /cases", () => {
     it("Should GET a single case", (done) => {
         supertest(app)
             .get(`/cases/${cases[0]._id.toHexString()}`)
+            .set("x-auth", users[0].tokens[0].token)
             .expect(200)
             .expect((res) => {
                 expect(res.body.the_case.id).toBe(cases[0].id);
@@ -106,6 +112,7 @@ describe("DELETE /cases", () => {
     it("Should delete a single case", (done) => {
         supertest(app)
             .delete(`/cases/${cases[0]._id.toHexString()}`)
+            .set("x-auth", users[0].tokens[0].token)
             .expect(200)
             .expect((res) => {
                 expect(res.body.the_case.id).toBe(cases[0].id);
@@ -122,6 +129,7 @@ describe("DELETE /cases", () => {
         const fakeID = new ObjectID();
         supertest(app)
             .delete(`/cases/${fakeID.toHexString()}`)
+            .set("x-auth", users[0].tokens[0].token)
             .expect(404)
             .end(done)
     });
