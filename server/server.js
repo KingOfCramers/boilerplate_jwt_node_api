@@ -118,7 +118,7 @@ app.delete("/users/logout", authenticate, (req, res) => {
 
 const port = process.env.PORT;
 app.listen(port, () => {
-    console.log(`**** server started on port ${port}.`);
+    console.log(`___${process.env.NODE_ENV} server____ started on port ${port}.\n`);
 });
 
 module.exports = { app };

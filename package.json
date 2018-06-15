@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha server/tests/*.test.js  --exit",
     "start": "node server/server.js",
-    "test-watch": "nodemon --exec \"npm test\"",
+    "test-watch": "export NODE_ENV=test || \"SET NODE_ENV=test\" && nodemon --exec \"npm test\"",
     "dev-server": "nodemon server/server.js"
   },
   "author": "",
