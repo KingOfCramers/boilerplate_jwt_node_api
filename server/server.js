@@ -1,6 +1,6 @@
 const express = require("express");
 const _ = require("lodash");
-const { dev, port} = require("./config/portSetter");
+const config = require("./config/config.js");
 
 const bodyParser = require("body-parser");
 const { mongoose } = require("./db/mongoose");
@@ -116,8 +116,9 @@ app.delete("/users/logout", authenticate, (req, res) => {
   );
 });
 
+const port = process.env.PORT;
 app.listen(port, () => {
-    console.log(`**** ${dev} server started on port ${port}.`);
+    console.log(`**** server started on port ${port}.`);
 });
 
 module.exports = { app };
