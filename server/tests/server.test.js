@@ -2,138 +2,13 @@ const expect = require("expect");
 const supertest = require("supertest");
 const { ObjectID } = require("mongodb");
 const { app } = require("../server.js");
-const { CourtCase } = require("../models/courtCase");
 const { User } = require("../models/user");
 const jwt = require("jsonwebtoken");
 
-const { cases, users, populate, populateUsers } = require("./seed/seed");
+const { users, populateUsers } = require("./seed/seed");
 
 // Reset database for tests
-beforeEach(populate);
 beforeEach(populateUsers);
-
-describe("POST /cases", () => {
-    it("Should POST a new courtCase", (done) => {
-        supertest(app)
-            .post("/cases")
-            .set("x-auth", users[0].tokens[0].token)
-            .send(cases[1])
-            .expect(200)
-            .expect((res) => {
-                expect(res.body.id).toBeA('number');
-                expect(res.body.date_created).toBeA('string')
-                expect(res.body.date_modified).toBeA('string')
-                expect(res.body.resource_uri).toBeA('string')
-                expect(res.body.case_name).toBeA('string')
-            })
-            .end(done);
-    });
-
-    it("Should not POST courtCase with invalid body data", (done) => {
-        supertest(app)
-            .post("/cases")
-            .set("x-auth", users[0].tokens[0].token)
-            .send({})
-            .expect(400)
-            .end((err,res) => {
-                if(err){
-                    return done(err);
-                }
-
-                CourtCase.find().then((cases) => {
-                    expect(cases.length).toBe(1);
-                    done();
-                }).catch((e) => {
-                    done(e);
-                });
-            });
-    });
-
-    it("Should not POST a duplicate courtCase", (done) => {
-        supertest(app)
-            .post("/cases")
-            .set("x-auth", users[0].tokens[0].token)
-            .send(cases[0])
-            .expect(400)
-            .end((err,res) => {
-                if(err){
-                    return done(err);
-                }
-
-                CourtCase.find().then((cases) => {
-                    expect(cases.length).toBe(1);
-                    done();
-                }).catch((e) => {
-                    done(e);
-                });
-            });
-    });
-});
-
-describe("GET /cases", () => {
-    it("Should GET all cases", (done) => {
-        supertest(app)
-            .get("/cases")
-            .set("x-auth", users[0].tokens[0].token)
-            .expect(200)
-            .expect((res) => {
-                expect(res.body.cases.length).toBe(1);
-            })
-            .end(done);
-    });
-
-    it("Should not GET a non-existent court case", (done) => {
-        const fakeID = new ObjectID();
-        supertest(app)
-            .get(`/cases/${fakeID.toHexString()}`)
-            .set("x-auth", users[0].tokens[0].token)
-            .expect(404)
-            .end(done)
-    });
-
-    it("Should GET a single case", (done) => {
-        supertest(app)
-            .get(`/cases/${cases[0]._id.toHexString()}`)
-            .set("x-auth", users[0].tokens[0].token)
-            .expect(200)
-            .expect((res) => {
-                expect(res.body.the_case.id).toBe(cases[0].id);
-                expect(res.body.the_case.absolute_url).toBe(cases[0].absolute_url);
-                expect(res.body.the_case.date_created).toBe(cases[0].date_created);
-                expect(res.body.the_case.date_modified).toBe(cases[0].date_modified);
-                expect(res.body.the_case.resource_uri).toBe(cases[0].resource_uri);
-                expect(res.body.the_case.case_name).toBe(cases[0].case_name);
-            })
-            .end(done);
-    });
-});
-
-describe("DELETE /cases", () => {
-    it("Should delete a single case", (done) => {
-        supertest(app)
-            .delete(`/cases/${cases[0]._id.toHexString()}`)
-            .set("x-auth", users[0].tokens[0].token)
-            .expect(200)
-            .expect((res) => {
-                expect(res.body.the_case.id).toBe(cases[0].id);
-                expect(res.body.the_case.absolute_url).toBe(cases[0].absolute_url);
-                expect(res.body.the_case.date_created).toBe(cases[0].date_created);
-                expect(res.body.the_case.date_modified).toBe(cases[0].date_modified);
-                expect(res.body.the_case.resource_uri).toBe(cases[0].resource_uri);
-                expect(res.body.the_case.case_name).toBe(cases[0].case_name);
-            })
-            .end(done);
-    });
-
-    it("Should not delete a non-existent court case", (done) => {
-        const fakeID = new ObjectID();
-        supertest(app)
-            .delete(`/cases/${fakeID.toHexString()}`)
-            .set("x-auth", users[0].tokens[0].token)
-            .expect(404)
-            .end(done)
-    });
-});
 
 describe("POST /users", () => {
     it("Should post a new user", (done) => {
